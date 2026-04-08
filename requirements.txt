@@ -1,0 +1,25 @@
+# ── LLM & Orchestration ──────────────────────────────────────────────────
+openai>=1.30.0
+langchain>=0.2.6
+langchain-openai>=0.1.14
+langchain-community>=0.2.6
+langgraph>=0.1.19
+
+# ── Vector Search & Embeddings ────────────────────────────────────────────
+faiss-cpu>=1.8.0
+sentence-transformers>=3.0.0   # multilingual embeddings (local, free)
+
+# ── PDF Processing ────────────────────────────────────────────────────────
+pypdf>=4.2.0
+
+# ── Language Detection ────────────────────────────────────────────────────
+langdetect>=1.0.9
+
+# ── Frontend ──────────────────────────────────────────────────────────────
+streamlit>=1.35.0
+
+# ── Utilities ─────────────────────────────────────────────────────────────
+numpy>=1.26.0
+python-dotenv>=1.0.0
+
+python-dotenv
