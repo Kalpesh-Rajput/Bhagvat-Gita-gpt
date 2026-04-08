@@ -2,6 +2,8 @@
 
 > **LangGraph + LangChain + GPT-4o-mini + FAISS RAG**
 
+test : https://bhagvat-gita-gpt.streamlit.app/
+
 An AI chatbot that resolves personal/life problems through Bhagavad Gita wisdom.
 Supports **Hindi**, **Hinglish**, and **English** queries with auto-detection.
 
