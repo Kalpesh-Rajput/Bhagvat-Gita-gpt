@@ -1,14 +1,8 @@
 """
-app.py (MODIFIED FOR GROQ SUPPORT)
+app.py
 ──────
 Streamlit frontend for the Multilingual Bhagavad Gita AI Chatbot.
-Powered by: LangGraph + LangChain + Groq Llama (or OpenAI GPT) + FAISS
-
-MODIFICATIONS:
-- Added support for Groq models (llama-3.1-8b-instant, etc.)
-- Dual API key handling (Groq + OpenAI)
-- Dynamic model selection with both providers
-- Automatic provider detection based on model name
+Powered by: LangGraph + LangChain + GPT-4o-mini + FAISS
 
 Run:
     streamlit run app.py
@@ -108,67 +102,31 @@ with st.sidebar:
     st.markdown("<h2 style='color:#8B1A1A;text-align:center;'>🕉️ Gita Guru</h2>",
                 unsafe_allow_html=True)
 
-    # ═══════════════════════════════════════════════════════════════════════
-    #  API KEYS (MODIFIED: Now supports both Groq and OpenAI)
-    # ═══════════════════════════════════════════════════════════════════════
-    
-    st.markdown("### 🔑 API Keys")
-    
-    # Groq API Key (primary - FREE!)
-    groq_key = st.text_input(
-        "Groq API Key (FREE!)", 
-        type="password",
-        value=os.environ.get("GROQ_API_KEY", ""),
-        help="Get free key at console.groq.com"
-    )
-    if groq_key:
-        os.environ["GROQ_API_KEY"] = groq_key
-    
-    # # OpenAI API Key (optional fallback)
-    # with st.expander("🔐 OpenAI Key (optional)", expanded=False):
-    #     openai_key = st.text_input(
-    #         "OpenAI API Key", 
-    #         type="password",
-    #         value=os.environ.get("OPENAI_API_KEY", ""),
-    #         label_visibility="collapsed"
-    #     )
-    #     if openai_key:
-    #         os.environ["OPENAI_API_KEY"] = openai_key
+    st.markdown("### 🔑 OpenAI API Key")
+    api_key = st.text_input("Key", type="password",
+                             value=os.environ.get("OPENAI_API_KEY", ""),
+                             label_visibility="collapsed")
+    if api_key:
+        os.environ["OPENAI_API_KEY"] = api_key
 
-    # ═══════════════════════════════════════════════════════════════════════
-    #  MODEL SELECTION (MODIFIED: Added Groq models)
-    # ═══════════════════════════════════════════════════════════════════════
-    
     st.markdown("---")
-    st.markdown("### 🤖 LLM Model")
+    st.markdown("### 🤖 GPT Model")
     model_choice = st.selectbox(
-        "Model", 
-        [
-            "llama-3.1-8b-instant",      # Groq - FASTEST, FREE
-            "llama-3.1-70b-versatile",   # Groq - More powerful
-            "mixtral-8x7b-32768",        # Groq - Alternative
-            "gpt-4o-mini",               # OpenAI - Paid
-            "gpt-3.5-turbo",             # OpenAI - Cheaper
-        ], 
-        index=0,
+        "Model", ["gpt-4o-mini", "gpt-3.5-turbo"], index=0,
         label_visibility="collapsed",
-        help="Groq models: FREE & LIGHTNING FAST ⚡\nOpenAI models: Paid but excellent quality",
+        help="gpt-4o-mini → best quality/cost\ngpt-3.5-turbo → cheapest",
     )
 
-    # ═══════════════════════════════════════════════════════════════════════
-    #  LANGGRAPH FLOW (MODIFIED: Dynamic model name)
-    # ═══════════════════════════════════════════════════════════════════════
-    
     st.markdown("---")
     st.markdown("### 🔀 LangGraph Flow")
-    st.markdown(f"""
+    st.markdown("""
 <div class="graph-node">▶ START</div>
 <div class="graph-arrow">↓</div>
 <div class="graph-node">🌐 detect_language</div>
 <div class="graph-arrow">↓</div>
 <div class="graph-node">🔍 retrieve_context<br><small>(FAISS · Hindi + English PDFs)</small></div>
 <div class="graph-arrow">↓</div>
-<div class="graph-node">🤖 generate_response<br><small>(LangChain · {model_choice})</small></div>
+<div class="graph-node">🤖 generate_response<br><small>(LangChain · GPT-4o-mini)</small></div>
 <div class="graph-arrow">↓</div>
 <div class="graph-node">⏹ END</div>
 """, unsafe_allow_html=True)
@@ -183,14 +141,9 @@ with st.sidebar:
         st.session_state.messages = []
         st.rerun()
 
-    # ═══════════════════════════════════════════════════════════════════════
-    #  FOOTER (MODIFIED: Dynamic provider name)
-    # ═══════════════════════════════════════════════════════════════════════
-    
     st.markdown("---")
     st.markdown("🇮🇳 Hindi &nbsp;·&nbsp; 🤝 Hinglish &nbsp;·&nbsp; 🇬🇧 English")
-    provider = "Groq (FREE!)" if model_choice.startswith(("llama", "mixtral")) else "OpenAI"
-    st.caption(f"LangGraph · LangChain · {provider} · FAISS")
+    st.caption("LangGraph · LangChain · OpenAI · FAISS")
 
 
 # ── header ────────────────────────────────────────────────────────────────
@@ -209,31 +162,13 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 
-# ═══════════════════════════════════════════════════════════════════════════
-#  API KEY GUARD (MODIFIED: Checks appropriate key based on model)
-# ═══════════════════════════════════════════════════════════════════════════
+# ── API key guard ─────────────────────────────────────────────────────────
 
-if model_choice.startswith("llama") or model_choice.startswith("mixtral"):
-    # Groq model selected
-    if not os.environ.get("GROQ_API_KEY"):
-        st.warning("⚠️ Please enter your **Groq API Key** in the sidebar to start.")
-        st.info("""
-        🎉 **Groq is FREE during beta!**
-        
-        Get your free API key at [console.groq.com](https://console.groq.com)
-        
-        - **llama-3.1-8b-instant**: Lightning fast (800+ tokens/sec) ⚡
-        - **Free tier**: Generous limits for testing
-        - **No credit card required**
-        """)
-        st.stop()
-else:
-    # OpenAI model selected
-    if not os.environ.get("OPENAI_API_KEY"):
-        st.warning("⚠️ Please enter your **OpenAI API Key** in the sidebar to start.")
-        st.info("Get it at [platform.openai.com/api-keys](https://platform.openai.com/api-keys). "
-                "`gpt-4o-mini` costs ~$0.00015 / 1K tokens — very affordable!")
-        st.stop()
+if not os.environ.get("OPENAI_API_KEY"):
+    st.warning("⚠️ Please enter your **OpenAI API Key** in the sidebar to start.")
+    st.info("Get it at [platform.openai.com/api-keys](https://platform.openai.com/api-keys). "
+            "`gpt-4o-mini` costs ~$0.00015 / 1K tokens — very affordable!")
+    st.stop()
 
 
 # ── example prompts ───────────────────────────────────────────────────────

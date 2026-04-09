@@ -4,6 +4,7 @@ langchain>=0.2.6
 langchain-openai>=0.1.14
 langchain-community>=0.2.6
 langgraph>=0.1.19
+langchain-groq>=0.1.0
 
 # ── Vector Search & Embeddings ────────────────────────────────────────────
 faiss-cpu>=1.8.0
@@ -23,3 +24,4 @@ numpy>=1.26.0
 python-dotenv>=1.0.0
 
 python-dotenv
+
