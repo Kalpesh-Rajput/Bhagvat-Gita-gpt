@@ -175,6 +175,7 @@ import os
 from typing import List, Dict
 
 from openai import OpenAI  # ✅ FIXED
+from groq import Groq
 
 from language_utils import (
     detect_language,
@@ -414,7 +415,8 @@ class GitaRAGPipeline:
     def __init__(self, vector_store: GitaVectorStore, all_docs: List[Dict]):
         self.vs = vector_store
         self.all_docs = all_docs
-        self.client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        # self.client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        self.client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
         self.conversation_history: List[Dict] = []
 
     def reset_conversation(self):
@@ -465,9 +467,17 @@ class GitaRAGPipeline:
 
         history_to_send = self.conversation_history[-8:]
 
-        # 6. Call OpenAI
+        # 6. Call OpenAI/LLama
+        # response = self.client.chat.completions.create(
+        #     model="gpt-4o-mini",
+        #     max_tokens=1500,
+        #     messages=[
+        #         {"role": "system", "content": SYSTEM_PROMPT},
+        #         *history_to_send
+        #     ],
+        # )
         response = self.client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="llama-3.1-8b-instant",  # or your selected model
             max_tokens=1500,
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
