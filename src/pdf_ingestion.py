@@ -249,59 +249,110 @@ def smart_chunk(text: str, max_chars: int = 800, overlap: int = 150) -> List[str
 # 📖 VERSE EXTRACTION
 # ─────────────────────────────────────────────────────────────
 
+# def extract_verses(text: str, language: str) -> List[Dict]:
+#     """
+#     Extract verses with chapter & verse numbers.
+#     """
+
+#     verses = []
+
+#     if language == "english":
+#         # Matches: Chapter 2 ... 2.47
+#         pattern = re.compile(r"(Chapter\s+(\d+))|(\\b(\d+)\\.(\d+)\\b)")
+
+#     else:  # Hindi
+#         pattern = re.compile(r"(अध्याय\s+(\d+))|(\\b(\d+)\\.(\d+)\\b)")
+
+#     current_chapter = None
+#     current_verse = None
+#     buffer = ""
+
+#     lines = text.split("\n")
+
+#     for line in lines:
+#         line = line.strip()
+
+#         # Chapter detection
+#         chap_match = re.search(r"(Chapter|अध्याय)\s+(\d+)", line, re.IGNORECASE)
+#         if chap_match:
+#             current_chapter = int(chap_match.group(2))
+#             continue
+
+#         # Verse detection (2.47 etc.)
+#         verse_match = re.search(r"\b(\d+)\.(\d+)\b", line)
+
+#         if verse_match:
+#             # Save previous verse
+#             if buffer:
+#                 verses.append({
+#                     "chapter": current_chapter,
+#                     "verse": current_verse,
+#                     "text": buffer.strip()
+#                 })
+#                 buffer = ""
+
+#             current_chapter = int(verse_match.group(1))
+#             current_verse = int(verse_match.group(2))
+#         else:
+#             buffer += " " + line
+
+#     # last verse
+#     if buffer:
+#         verses.append({
+#             "chapter": current_chapter,
+#             "verse": current_verse,
+#             "text": buffer.strip()
+#         })
+
+#     return verses
+
 def extract_verses(text: str, language: str) -> List[Dict]:
-    """
-    Extract verses with chapter & verse numbers.
-    """
 
     verses = []
 
-    if language == "english":
-        # Matches: Chapter 2 ... 2.47
-        pattern = re.compile(r"(Chapter\s+(\d+))|(\\b(\d+)\\.(\d+)\\b)")
-
-    else:  # Hindi
-        pattern = re.compile(r"(अध्याय\s+(\d+))|(\\b(\d+)\\.(\d+)\\b)")
-
     current_chapter = None
     current_verse = None
-    buffer = ""
+    buffer_lines = []
 
     lines = text.split("\n")
 
     for line in lines:
         line = line.strip()
 
-        # Chapter detection
+        # ── Detect chapter ──
         chap_match = re.search(r"(Chapter|अध्याय)\s+(\d+)", line, re.IGNORECASE)
         if chap_match:
             current_chapter = int(chap_match.group(2))
             continue
 
-        # Verse detection (2.47 etc.)
+        # ── Detect verse number (e.g., 2.47) ──
         verse_match = re.search(r"\b(\d+)\.(\d+)\b", line)
 
         if verse_match:
             # Save previous verse
-            if buffer:
+            if buffer_lines:
                 verses.append({
                     "chapter": current_chapter,
                     "verse": current_verse,
-                    "text": buffer.strip()
+                    "text": "\n".join(buffer_lines).strip()
                 })
-                buffer = ""
+                buffer_lines = []
 
             current_chapter = int(verse_match.group(1))
             current_verse = int(verse_match.group(2))
-        else:
-            buffer += " " + line
 
-    # last verse
-    if buffer:
+            continue
+
+        # ✅ Keep ALL lines (important fix)
+        if line:
+            buffer_lines.append(line)
+
+    # ── Save last verse ──
+    if buffer_lines:
         verses.append({
             "chapter": current_chapter,
             "verse": current_verse,
-            "text": buffer.strip()
+            "text": "\n".join(buffer_lines).strip()
         })
 
     return verses
