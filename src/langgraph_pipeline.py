@@ -197,28 +197,45 @@ from vector_store import GitaVectorStore
 
 # ── LLM Builder (supports both Groq and OpenAI) ──────────────────────────
 
-def build_llm(model: str = "llama-3.1-8b-instant", temperature: float = 0.4) -> Union[ChatGroq, ChatOpenAI]:
+def build_llm(model: str = "llama-3.1-70b-versatile", temperature: float = 0.3) -> Union[ChatGroq, ChatOpenAI]:
     """
     Returns a LangChain LLM instance (Groq or OpenAI based on model name).
-
-    Groq models (FAST & FREE during beta):
-      llama-3.1-8b-instant    — fastest, FREE, excellent reasoning, 8K context
-                                ~800 tokens/sec (10x faster than GPT!)
-      llama-3.1-70b-versatile — more powerful, slightly slower, 32K context
-      mixtral-8x7b-32768       — alternative fast model, 32K context
-
-    OpenAI models (paid, high quality):
-      gpt-4o-mini             — best quality/cost, multilingual, 128K context
-                                ~$0.00015 / 1K input tokens
-      gpt-3.5-turbo           — cheaper, slightly less accurate, 16K context
     
-    The function automatically detects which provider to use based on model name:
-    - Models starting with "llama" or "mixtral" → Groq
-    - Models starting with "gpt" → OpenAI
+    RECOMMENDED MODELS FOR SPIRITUAL CONTENT:
+    
+    Best Quality (Recommended):
+      claude-sonnet-4-20250514    — Best for spiritual/philosophical content
+                                    ~$3/1M input tokens (Anthropic API)
+    
+    Groq models (FREE during beta):
+      llama-3.1-70b-versatile     — RECOMMENDED for Gita (more powerful, better reasoning)
+      llama-3.1-8b-instant        — Faster but weaker (not recommended for spiritual content)
+      
+    OpenAI models (paid):
+      gpt-4o-mini                 — Good quality, multilingual
     """
     
     # Determine provider based on model name
-    if model.startswith("llama") or model.startswith("mixtral"):
+    if model.startswith("claude"):
+        # ═══════════════════════════════════════════════════════════════
+        #  ANTHROPIC CLAUDE (BEST FOR SPIRITUAL CONTENT)
+        # ═══════════════════════════════════════════════════════════════
+        from langchain_anthropic import ChatAnthropic
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        if not api_key:
+            raise ValueError(
+                "ANTHROPIC_API_KEY environment variable not set. "
+                "Get your key at: https://console.anthropic.com"
+            )
+        
+        return ChatAnthropic(
+            model=model,
+            temperature=temperature,
+            anthropic_api_key=api_key,
+            max_tokens=2000,  # Increased for detailed spiritual responses
+        )
+    
+    elif model.startswith("llama") or model.startswith("mixtral"):
         # ═══════════════════════════════════════════════════════════════
         #  GROQ MODELS (FREE during beta!)
         # ═══════════════════════════════════════════════════════════════
@@ -233,7 +250,7 @@ def build_llm(model: str = "llama-3.1-8b-instant", temperature: float = 0.4) -> 
             model=model,
             temperature=temperature,
             groq_api_key=api_key,
-            max_tokens=1200,
+            max_tokens=2000,  # Increased for detailed responses
         )
     
     else:
@@ -251,8 +268,65 @@ def build_llm(model: str = "llama-3.1-8b-instant", temperature: float = 0.4) -> 
             model=model,
             temperature=temperature,
             openai_api_key=api_key,
-            max_tokens=1200,
+            max_tokens=2000,
         )
+# Old code 
+# def build_llm(model: str = "llama-3.1-8b-instant", temperature: float = 0.4) -> Union[ChatGroq, ChatOpenAI]:
+#     """
+#     Returns a LangChain LLM instance (Groq or OpenAI based on model name).
+
+#     Groq models (FAST & FREE during beta):
+#       llama-3.1-8b-instant    — fastest, FREE, excellent reasoning, 8K context
+#                                 ~800 tokens/sec (10x faster than GPT!)
+#       llama-3.1-70b-versatile — more powerful, slightly slower, 32K context
+#       mixtral-8x7b-32768       — alternative fast model, 32K context
+
+#     OpenAI models (paid, high quality):
+#       gpt-4o-mini             — best quality/cost, multilingual, 128K context
+#                                 ~$0.00015 / 1K input tokens
+#       gpt-3.5-turbo           — cheaper, slightly less accurate, 16K context
+    
+#     The function automatically detects which provider to use based on model name:
+#     - Models starting with "llama" or "mixtral" → Groq
+#     - Models starting with "gpt" → OpenAI
+#     """
+    
+#     # Determine provider based on model name
+#     if model.startswith("llama") or model.startswith("mixtral"):
+#         # ═══════════════════════════════════════════════════════════════
+#         #  GROQ MODELS (FREE during beta!)
+#         # ═══════════════════════════════════════════════════════════════
+#         api_key = os.environ.get("GROQ_API_KEY")
+#         if not api_key:
+#             raise ValueError(
+#                 "GROQ_API_KEY environment variable not set. "
+#                 "Get your free key at: https://console.groq.com"
+#             )
+        
+#         return ChatGroq(
+#             model=model,
+#             temperature=temperature,
+#             groq_api_key=api_key,
+#             max_tokens=1200,
+#         )
+    
+#     else:
+#         # ═══════════════════════════════════════════════════════════════
+#         #  OPENAI MODELS (Paid)
+#         # ═══════════════════════════════════════════════════════════════
+#         api_key = os.environ.get("OPENAI_API_KEY")
+#         if not api_key:
+#             raise ValueError(
+#                 "OPENAI_API_KEY environment variable not set. "
+#                 "Get your key at: https://platform.openai.com/api-keys"
+#             )
+        
+#         return ChatOpenAI(
+#             model=model,
+#             temperature=temperature,
+#             openai_api_key=api_key,
+#             max_tokens=1200,
+#         )
 
 
 # ── Graph builder ─────────────────────────────────────────────────────────
